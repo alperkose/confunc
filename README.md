@@ -1,0 +1,2 @@
+# confunc
+Functional configuration
