@@ -6,18 +6,6 @@ import (
 	"github.com/alperkose/confunc"
 )
 
-//func Test_FunctionGenerator(t *testing.T){
-//
-//	expectedValue := "some param"
-//	configurationKey := "myConfig"
-//	configUnderTest := From(Map(map[string]string{configurationKey:expectedValue})).StringFunc(configurationKey).Build()
-//
-//	actualValue := configUnderTest()
-//	if actualValue != expectedValue {
-//		t.Errorf("expected %v to be %v", actualValue, expectedValue)
-//	}
-//}
-
 
 func Test_MapSource(t *testing.T){
 	expectedValue := "some param"
