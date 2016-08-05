@@ -4,8 +4,14 @@ type Parameterizer struct {
 	s Source
 }
 
-func (p *Parameterizer) StringFunc(sourceKey string) *StringBuilder{
-	return &StringBuilder{p.s, sourceKey}
+func (p *Parameterizer) String(sourceKey string, wrappers ...Wrapper) String{
+	return func() string {
+		value := p.s.Value(sourceKey)
+		for _, w := range wrappers {
+			value = w(value)
+		}
+		return value
+	}
 }
 
 func From(s Source) *Parameterizer{
