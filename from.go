@@ -4,13 +4,23 @@ type Parameterizer struct {
 	s Source
 }
 
-func (p *Parameterizer) String(sourceKey string, wrappers ...Wrapper) String{
+func (p *Parameterizer) String(sourceKey string, interceptors ...Interceptor) String{
+
+	base := func() string {
+		return p.s.Value(sourceKey)
+	}
+
+	for _, icp := range interceptors {
+		base = convertInterceptor(icp, base)
+	}
+
+	return base
+
+}
+
+func convertInterceptor(i Interceptor, base String) String{
 	return func() string {
-		value := p.s.Value(sourceKey)
-		for _, w := range wrappers {
-			value = w(value)
-		}
-		return value
+		return i(base)
 	}
 }
 
