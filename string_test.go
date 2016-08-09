@@ -22,12 +22,12 @@ func Test_FunctionGenerator(t *testing.T) {
 func Test_FunctionGenerator_WhenAnInterceptorIsProvided(t *testing.T) {
 	configurationValue := "some param"
 	postfix := "Wrapped"
-	expectedValue := configurationValue+postfix
+	expectedValue := configurationValue + postfix
 	configurationKey := "myConfig"
 	configUnderTest := confunc.
 		From(confunc.Map(map[string]string{configurationKey: configurationValue})).
-		String(configurationKey, func(v confunc.String) string{
-			return v()+postfix
+		String(configurationKey, func(v confunc.String) string {
+			return v() + postfix
 		})
 
 	actualValue := configUnderTest()

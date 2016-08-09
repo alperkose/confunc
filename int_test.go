@@ -2,8 +2,8 @@ package confunc_test
 
 import (
 	"github.com/alperkose/confunc"
-	"testing"
 	"strconv"
+	"testing"
 )
 
 func Test_IntFunc(t *testing.T) {
@@ -29,7 +29,7 @@ func Test_IntFuncWithWrapper(t *testing.T) {
 		From(confunc.Map(map[string]string{configurationKey: strconv.Itoa(aValue)})).
 		Int(configurationKey, func(s confunc.String) string {
 			return strconv.Itoa(expectedValue)
-	})
+		})
 
 	actualValue := configUnderTest()
 	if actualValue != expectedValue {
