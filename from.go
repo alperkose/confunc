@@ -30,6 +30,16 @@ func (p *Parameterizer) Int(sourceKey string, interceptors ...Interceptor) Integ
 	return base
 }
 
+func (p *Parameterizer) Bool(sourceKey string, interceptors ...Interceptor) Boolean {
+	base := func() bool {
+		strFunc := p.String(sourceKey, interceptors...)
+		val, _ := strconv.ParseBool(strFunc())
+		return val
+	}
+
+	return base
+}
+
 func convertInterceptor(i Interceptor, base String) String {
 	return func() string {
 		return i(base)
