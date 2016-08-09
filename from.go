@@ -40,6 +40,16 @@ func (p *Parameterizer) Bool(sourceKey string, interceptors ...Interceptor) Bool
 	return base
 }
 
+func (p *Parameterizer) Float64(sourceKey string, interceptors ...Interceptor) Float64 {
+	base := func() float64 {
+		strFunc := p.String(sourceKey, interceptors...)
+		val, _ := strconv.ParseFloat(strFunc(), 64)
+		return val
+	}
+
+	return base
+}
+
 func convertInterceptor(i Interceptor, base String) String {
 	return func() string {
 		return i(base)
