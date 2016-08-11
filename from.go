@@ -21,8 +21,8 @@ func (p *Parameterizer) String(sourceKey string, interceptors ...Interceptor) St
 }
 
 func (p *Parameterizer) Int(sourceKey string, interceptors ...Interceptor) Integer {
+	strFunc := p.String(sourceKey, interceptors...)
 	base := func() int {
-		strFunc := p.String(sourceKey, interceptors...)
 		val, _ := strconv.Atoi(strFunc())
 		return val
 	}
@@ -31,8 +31,8 @@ func (p *Parameterizer) Int(sourceKey string, interceptors ...Interceptor) Integ
 }
 
 func (p *Parameterizer) Bool(sourceKey string, interceptors ...Interceptor) Boolean {
+	strFunc := p.String(sourceKey, interceptors...)
 	base := func() bool {
-		strFunc := p.String(sourceKey, interceptors...)
 		val, _ := strconv.ParseBool(strFunc())
 		return val
 	}
@@ -41,8 +41,8 @@ func (p *Parameterizer) Bool(sourceKey string, interceptors ...Interceptor) Bool
 }
 
 func (p *Parameterizer) Float64(sourceKey string, interceptors ...Interceptor) Float64 {
+	strFunc := p.String(sourceKey, interceptors...)
 	base := func() float64 {
-		strFunc := p.String(sourceKey, interceptors...)
 		val, _ := strconv.ParseFloat(strFunc(), 64)
 		return val
 	}

@@ -76,3 +76,23 @@ func Test_DefaultInterceptor_WhenSourceHasValue_ShouldReturnSourceValue(t *testi
 		t.Errorf("expected '%v' to be '%v'", actualVal, sourceValue)
 	}
 }
+
+type testSource struct{}
+
+func (ts *testSource) Value(k string) string {
+	return someRandomStuff()
+}
+
+func BenchmarkAll(b *testing.B) {
+	confuncUnderTest := confunc.From(&testSource{}).Float64("somekey", confunc.CacheOnce())
+
+	firstVal := confuncUnderTest()
+	for i := 0; i < b.N; i++ {
+		aVal := confuncUnderTest()
+		//log.Print(aVal)
+		if firstVal != aVal {
+			b.Errorf("expected '%v' to be '%v'", firstVal, aVal)
+		}
+	}
+
+}
