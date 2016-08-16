@@ -14,7 +14,7 @@ func (s *consul) Value(k string) string {
 	if err != nil {
 		return ""
 	}
-	pair, q, err := consulAPI.KV().Get(k, nil)
+	pair, _, err := consulAPI.KV().Get(k, nil)
 	if err != nil || pair == nil {
 		return ""
 	}
