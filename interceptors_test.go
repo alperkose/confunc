@@ -3,7 +3,6 @@ package confunc_test
 import (
 	"errors"
 	"github.com/alperkose/confunc"
-	"log"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -16,7 +15,7 @@ func Test_CacheOnceInterceptor(t *testing.T) {
 
 	firstVal, err := cfn()
 	if err != nil {
-		t.Errorf("error should not have occurred : %v ", err.Error())
+		t.Errorf("error should not have occurred : %v ", err)
 	}
 
 	for i := 0; i < 100; i++ {
@@ -24,7 +23,7 @@ func Test_CacheOnceInterceptor(t *testing.T) {
 		aVal, err := cfn()
 
 		if err != nil {
-			t.Errorf("error should not have occurred : %v ", err.Error())
+			t.Errorf("error should not have occurred : %v ", err)
 		}
 		if firstVal != aVal {
 			t.Errorf("expected '%v' to be '%v'", firstVal, aVal)
@@ -44,7 +43,7 @@ func Test_CacheForInterceptor(t *testing.T) {
 	cfn := interceptorUnderTest(someRandomStuff)
 	firstVal, err := cfn()
 	if err != nil {
-		t.Errorf("error should not have occurred : %v ", err.Error())
+		t.Errorf("error should not have occurred : %v ", err)
 	}
 
 	for i := 0; i < 100; i++ {
@@ -52,7 +51,7 @@ func Test_CacheForInterceptor(t *testing.T) {
 		aVal, err := cfn()
 
 		if err != nil {
-			t.Errorf("error should not have occurred : %v ", err.Error())
+			t.Errorf("error should not have occurred : %v ", err)
 		}
 		if firstVal != aVal {
 			t.Errorf("expected '%v' to be '%v'", firstVal, aVal)
@@ -65,7 +64,7 @@ func Test_CacheForInterceptor(t *testing.T) {
 	lastVal, err := cfn()
 
 	if err != nil {
-		t.Errorf("error should not have occurred : %v ", err.Error())
+		t.Errorf("error should not have occurred : %v ", err)
 	}
 	if firstVal == lastVal {
 		t.Errorf("expected '%v' to be different than '%v'", lastVal, firstVal)
@@ -75,7 +74,7 @@ func Test_CacheForInterceptor(t *testing.T) {
 		aVal, err := cfn()
 
 		if err != nil {
-			t.Errorf("error should not have occurred : %v ", err.Error())
+			t.Errorf("error should not have occurred : %v ", err)
 		}
 		if lastVal != aVal {
 			t.Errorf("expected '%v' to be '%v'", firstVal, aVal)
@@ -100,7 +99,7 @@ func testCacheInterceptor_WhenSourceHasTemporaryError(t *testing.T, interceptorU
 	cfn = interceptorUnderTest(confuncToCover)
 	secondVal, err := cfn()
 	if err != nil {
-		t.Errorf("error should not have occurred : %v ", err.Error())
+		t.Errorf("error should not have occurred : %v ", err)
 	}
 	if len(secondVal) == 0 {
 		t.Errorf("should have returned a value")
@@ -109,9 +108,8 @@ func testCacheInterceptor_WhenSourceHasTemporaryError(t *testing.T, interceptorU
 	cfn = interceptorUnderTest(confuncToCover)
 	thirdVal, err := cfn()
 	if err != nil {
-		t.Errorf("error should not have occurred : %v ", err.Error())
+		t.Errorf("error should not have occurred : %v ", err)
 	}
-	log.Println(secondVal, thirdVal)
 	if thirdVal != secondVal {
 		t.Errorf("should have returned value from cache")
 	}
@@ -125,7 +123,7 @@ func Test_DefaultInterceptor_WhenSourceHasNoValue_ShouldReturnDefaultValue(t *te
 	actualVal, err := cfn()
 
 	if err != nil {
-		t.Errorf("error should not have occurred : %v ", err.Error())
+		t.Errorf("error should not have occurred : %v ", err)
 	}
 
 	if actualVal != defaultValue {
@@ -142,7 +140,7 @@ func Test_DefaultInterceptor_WhenSourceHasValue_ShouldReturnSourceValue(t *testi
 	actualVal, err := cfn()
 
 	if err != nil {
-		t.Errorf("error should not have occurred : %v ", err.Error())
+		t.Errorf("error should not have occurred : %v ", err)
 	}
 
 	if actualVal != sourceValue {
@@ -159,7 +157,6 @@ func someRandomStuff() (string, error) {
 func confuncWithErrorAndSuccessCycle() confunc.Confunc {
 	var hammerTime = true
 	return func() (string, error) {
-		log.Println(hammerTime)
 		v := ""
 		var err error
 		err = nil
@@ -169,7 +166,6 @@ func confuncWithErrorAndSuccessCycle() confunc.Confunc {
 			v, err = someRandomStuff()
 		}
 		hammerTime = !hammerTime
-		log.Println("hammer time ", hammerTime, v, err)
 		return v, err
 	}
 }
@@ -188,7 +184,6 @@ func BenchmarkAll(b *testing.B) {
 	firstVal := confuncUnderTest()
 	for i := 0; i < b.N; i++ {
 		aVal := confuncUnderTest()
-		//log.Print(aVal)
 		if firstVal != aVal {
 			b.Errorf("expected '%v' to be '%v'", firstVal, aVal)
 		}
