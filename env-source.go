@@ -1,11 +1,18 @@
 package confunc
 
-import "os"
+import (
+	"errors"
+	"os"
+)
 
 type env struct{}
 
 func (s *env) Value(k string) (string, error) {
-	return os.Getenv(k), nil
+	v, ok := os.LookupEnv(k)
+	if !ok {
+		return v, errors.New("No value is retrieved")
+	}
+	return v, nil
 }
 
 func Env() Source {

@@ -24,3 +24,21 @@ func Test_EnvSource(t *testing.T) {
 	}
 
 }
+
+func Test_EnvSource_WhenTheConfigurationDoesNotExist(t *testing.T) {
+	expectedValue := ""
+	configurationKey := "TEST_NOT_EXISTING_PARAM"
+
+	var sut confunc.Source
+
+	sut = confunc.Env()
+	actualValue, err := sut.Value(configurationKey)
+
+	if err == nil {
+		t.Errorf("an error should have occurred")
+	}
+	if actualValue != expectedValue {
+		t.Errorf("expected %v to be %v", actualValue, expectedValue)
+	}
+
+}

@@ -32,8 +32,8 @@ func Test_MapSourceWhenThereIsNoValueForGivenKey(t *testing.T) {
 	sut = confunc.Map(map[string]string{"key1": "value1"})
 	actualValue, err := sut.Value(configurationKey)
 
-	if err != nil {
-		t.Errorf("error should not have occurred : %v", err.Error())
+	if err == nil {
+		t.Errorf("an error should have occurred")
 	}
 
 	if len(actualValue) > 0 {
