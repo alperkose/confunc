@@ -20,15 +20,15 @@ func Test_BoolFunc(t *testing.T) {
 	}
 }
 
-func Test_BoolFuncWithWrapper(t *testing.T) {
+func Test_BoolFuncWithInterceptor(t *testing.T) {
 
 	aValue := false
 	expectedValue := true
 	configurationKey := "myConfig"
 	configUnderTest := confunc.
 		From(confunc.Map(map[string]string{configurationKey: strconv.FormatBool(aValue)})).
-		Bool(configurationKey, func(s confunc.String) string {
-			return strconv.FormatBool(expectedValue)
+		Bool(configurationKey, func(s confunc.Confunc) confunc.Confunc {
+			return func() (string, error) { return strconv.FormatBool(expectedValue), nil }
 		})
 
 	actualValue := configUnderTest()

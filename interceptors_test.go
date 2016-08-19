@@ -1,7 +1,9 @@
 package confunc_test
 
 import (
+	"errors"
 	"github.com/alperkose/confunc"
+	"log"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -10,23 +12,48 @@ import (
 
 func Test_CacheOnceInterceptor(t *testing.T) {
 	interceptorUnderTest := confunc.CacheOnce()
+	cfn := interceptorUnderTest(someRandomStuff)
 
-	firstVal := interceptorUnderTest(someRandomStuff)
+	firstVal, err := cfn()
+	if err != nil {
+		t.Errorf("error should not have occurred : %v ", err.Error())
+	}
+
 	for i := 0; i < 100; i++ {
-		aVal := interceptorUnderTest(someRandomStuff)
+		cfn = interceptorUnderTest(someRandomStuff)
+		aVal, err := cfn()
+
+		if err != nil {
+			t.Errorf("error should not have occurred : %v ", err.Error())
+		}
 		if firstVal != aVal {
 			t.Errorf("expected '%v' to be '%v'", firstVal, aVal)
 		}
 	}
 }
 
+func Test_CacheOnce_WhenSourceHasTemporaryError(t *testing.T) {
+	interceptorUnderTest := confunc.CacheOnce()
+	testCacheInterceptor_WhenSourceHasTemporaryError(t, interceptorUnderTest)
+}
+
 func Test_CacheForInterceptor(t *testing.T) {
 	var cacheOffset = 250 * time.Millisecond
 	interceptorUnderTest := confunc.CacheFor(cacheOffset)
 
-	firstVal := interceptorUnderTest(someRandomStuff)
+	cfn := interceptorUnderTest(someRandomStuff)
+	firstVal, err := cfn()
+	if err != nil {
+		t.Errorf("error should not have occurred : %v ", err.Error())
+	}
+
 	for i := 0; i < 100; i++ {
-		aVal := interceptorUnderTest(someRandomStuff)
+		cfn = interceptorUnderTest(someRandomStuff)
+		aVal, err := cfn()
+
+		if err != nil {
+			t.Errorf("error should not have occurred : %v ", err.Error())
+		}
 		if firstVal != aVal {
 			t.Errorf("expected '%v' to be '%v'", firstVal, aVal)
 		}
@@ -34,29 +61,72 @@ func Test_CacheForInterceptor(t *testing.T) {
 
 	time.Sleep(cacheOffset)
 
-	lastVal := interceptorUnderTest(someRandomStuff)
+	cfn = interceptorUnderTest(someRandomStuff)
+	lastVal, err := cfn()
+
+	if err != nil {
+		t.Errorf("error should not have occurred : %v ", err.Error())
+	}
 	if firstVal == lastVal {
 		t.Errorf("expected '%v' to be different than '%v'", lastVal, firstVal)
 	}
 	for i := 0; i < 100; i++ {
-		aVal := interceptorUnderTest(someRandomStuff)
+		cfn = interceptorUnderTest(someRandomStuff)
+		aVal, err := cfn()
+
+		if err != nil {
+			t.Errorf("error should not have occurred : %v ", err.Error())
+		}
 		if lastVal != aVal {
 			t.Errorf("expected '%v' to be '%v'", firstVal, aVal)
 		}
 	}
 }
 
-var rndSource = rand.New(rand.NewSource(time.Now().Unix()))
+func Test_CacheFor_WhenSourceHasTemporaryError(t *testing.T) {
+	interceptorUnderTest := confunc.CacheFor(250 * time.Millisecond)
+	testCacheInterceptor_WhenSourceHasTemporaryError(t, interceptorUnderTest)
+}
 
-func someRandomStuff() string {
-	return strconv.FormatFloat(rndSource.Float64(), 'f', 10, 64)
+func testCacheInterceptor_WhenSourceHasTemporaryError(t *testing.T, interceptorUnderTest confunc.Interceptor) {
+	confuncToCover := confuncWithErrorAndSuccessCycle()
+	cfn := interceptorUnderTest(confuncToCover)
+
+	_, err := cfn()
+	if err == nil {
+		t.Errorf("an error should have occurred")
+	}
+
+	cfn = interceptorUnderTest(confuncToCover)
+	secondVal, err := cfn()
+	if err != nil {
+		t.Errorf("error should not have occurred : %v ", err.Error())
+	}
+	if len(secondVal) == 0 {
+		t.Errorf("should have returned a value")
+	}
+
+	cfn = interceptorUnderTest(confuncToCover)
+	thirdVal, err := cfn()
+	if err != nil {
+		t.Errorf("error should not have occurred : %v ", err.Error())
+	}
+	log.Println(secondVal, thirdVal)
+	if thirdVal != secondVal {
+		t.Errorf("should have returned value from cache")
+	}
 }
 
 func Test_DefaultInterceptor_WhenSourceHasNoValue_ShouldReturnDefaultValue(t *testing.T) {
 	defaultValue := "42"
 	interceptorUnderTest := confunc.Default(defaultValue)
 
-	actualVal := interceptorUnderTest(func() string { return "" })
+	cfn := interceptorUnderTest(func() (string, error) { return "", errors.New("Configuration Not found") })
+	actualVal, err := cfn()
+
+	if err != nil {
+		t.Errorf("error should not have occurred : %v ", err.Error())
+	}
 
 	if actualVal != defaultValue {
 		t.Errorf("expected '%v' to be '%v'", actualVal, defaultValue)
@@ -68,19 +138,48 @@ func Test_DefaultInterceptor_WhenSourceHasValue_ShouldReturnSourceValue(t *testi
 	defaultValue := "42"
 	interceptorUnderTest := confunc.Default(defaultValue)
 
-	actualVal := interceptorUnderTest(func() string {
-		return sourceValue
-	})
+	cfn := interceptorUnderTest(func() (string, error) { return sourceValue, nil })
+	actualVal, err := cfn()
+
+	if err != nil {
+		t.Errorf("error should not have occurred : %v ", err.Error())
+	}
 
 	if actualVal != sourceValue {
 		t.Errorf("expected '%v' to be '%v'", actualVal, sourceValue)
 	}
 }
 
+var rndSource = rand.New(rand.NewSource(time.Now().Unix()))
+
+func someRandomStuff() (string, error) {
+	return strconv.FormatFloat(rndSource.Float64(), 'f', 10, 64), nil
+}
+
+func confuncWithErrorAndSuccessCycle() confunc.Confunc {
+	var hammerTime = true
+	return func() (string, error) {
+		log.Println(hammerTime)
+		v := ""
+		var err error
+		err = nil
+		if hammerTime {
+			err = errors.New("Can't touch this!!!")
+		} else {
+			v, err = someRandomStuff()
+		}
+		hammerTime = !hammerTime
+		log.Println("hammer time ", hammerTime, v, err)
+		return v, err
+	}
+}
+
 type testSource struct{}
 
-func (ts *testSource) Value(k string) string {
-	return someRandomStuff()
+func (ts *testSource) Value(k string) (string, error) {
+	v, err := someRandomStuff()
+
+	return v, err
 }
 
 func BenchmarkAll(b *testing.B) {

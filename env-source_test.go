@@ -14,8 +14,13 @@ func Test_EnvSource(t *testing.T) {
 	var sut confunc.Source
 
 	sut = confunc.Env()
-	actualValue := sut.Value(configurationKey)
+	actualValue, err := sut.Value(configurationKey)
+
+	if err != nil {
+		t.Errorf("error should not have occurred : %v", err.Error())
+	}
 	if actualValue != expectedValue {
 		t.Errorf("expected %v to be %v", actualValue, expectedValue)
 	}
+
 }

@@ -13,7 +13,12 @@ func Test_MapSource(t *testing.T) {
 	var sut confunc.Source
 
 	sut = confunc.Map(map[string]string{configurationKey: expectedValue})
-	actualValue := sut.Value(configurationKey)
+	actualValue, err := sut.Value(configurationKey)
+
+	if err != nil {
+		t.Errorf("error should not have occurred : %v", err.Error())
+	}
+
 	if actualValue != expectedValue {
 		t.Errorf("expected %v to be %v", actualValue, expectedValue)
 	}
@@ -25,7 +30,12 @@ func Test_MapSourceWhenThereIsNoValueForGivenKey(t *testing.T) {
 	var sut confunc.Source
 
 	sut = confunc.Map(map[string]string{"key1": "value1"})
-	actualValue := sut.Value(configurationKey)
+	actualValue, err := sut.Value(configurationKey)
+
+	if err != nil {
+		t.Errorf("error should not have occurred : %v", err.Error())
+	}
+
 	if len(actualValue) > 0 {
 		t.Errorf("expected %v to be empty", actualValue)
 	}

@@ -6,17 +6,28 @@ type Parameterizer struct {
 	s Source
 }
 
-func (p *Parameterizer) String(sourceKey string, interceptors ...Interceptor) String {
+func (p *Parameterizer) Conf(sourceKey string, interceptors ...Interceptor) Confunc {
 
-	base := func() string {
-		return p.s.Value(sourceKey)
+	base := func() (string, error) {
+		v, err := p.s.Value(sourceKey)
+		return v, err
 	}
 
 	for _, icp := range interceptors {
-		base = convertInterceptor(icp, base)
+		base = icp(base)
 	}
 
 	return base
+
+}
+
+func (p *Parameterizer) String(sourceKey string, interceptors ...Interceptor) String {
+	strFunc := p.Conf(sourceKey, interceptors...)
+	strVal, err := strFunc()
+	if err != nil {
+		return func() string { return "" }
+	}
+	return func() string { return strVal }
 
 }
 
@@ -48,12 +59,6 @@ func (p *Parameterizer) Float64(sourceKey string, interceptors ...Interceptor) F
 	}
 
 	return base
-}
-
-func convertInterceptor(i Interceptor, base String) String {
-	return func() string {
-		return i(base)
-	}
 }
 
 func From(s Source) *Parameterizer {

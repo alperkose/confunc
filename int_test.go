@@ -20,15 +20,15 @@ func Test_IntFunc(t *testing.T) {
 	}
 }
 
-func Test_IntFuncWithWrapper(t *testing.T) {
+func Test_IntFuncWithInterceptor(t *testing.T) {
 
 	aValue := 17
 	expectedValue := 25
 	configurationKey := "myConfig"
 	configUnderTest := confunc.
 		From(confunc.Map(map[string]string{configurationKey: strconv.Itoa(aValue)})).
-		Int(configurationKey, func(s confunc.String) string {
-			return strconv.Itoa(expectedValue)
+		Int(configurationKey, func(s confunc.Confunc) confunc.Confunc {
+			return func() (string, error) { return strconv.Itoa(expectedValue), nil }
 		})
 
 	actualValue := configUnderTest()

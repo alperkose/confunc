@@ -6,13 +6,23 @@ import (
 )
 
 func CacheOnce() Interceptor {
-	var o sync.Once
-	var cached string
+	var m sync.Mutex
+	var cached Confunc
+	var retry = true
 
-	return func(v String) string {
-		o.Do(func() {
-			cached = v()
-		})
+	return func(v Confunc) Confunc {
+		m.Lock()
+		if retry {
+			cachedVal, err := v()
+			if err != nil {
+				retry = true
+				cached = func() (string, error) { return "", err }
+			} else {
+				retry = false
+				cached = func() (string, error) { return cachedVal, nil }
+			}
+		}
+		m.Unlock()
 		return cached
 	}
 }
@@ -20,13 +30,22 @@ func CacheOnce() Interceptor {
 func CacheFor(cacheDuration time.Duration) Interceptor {
 	var lastCall time.Time = time.Now().Add(-10*time.Second - cacheDuration)
 	var m sync.Mutex
-	var cached string
+	var cached Confunc
+	var retry = true
 
-	return func(v String) string {
+	return func(v Confunc) Confunc {
+
 		m.Lock()
-		if time.Since(lastCall) > cacheDuration {
+		if retry || time.Since(lastCall) > cacheDuration {
 			lastCall = time.Now()
-			cached = v()
+			cachedVal, err := v()
+			if err != nil {
+				retry = true
+				cached = func() (string, error) { return "", err }
+			} else {
+				retry = false
+				cached = func() (string, error) { return cachedVal, nil }
+			}
 		}
 		m.Unlock()
 		return cached
@@ -34,11 +53,11 @@ func CacheFor(cacheDuration time.Duration) Interceptor {
 }
 
 func Default(defaultVal string) Interceptor {
-	return func(v String) string {
-		actualVal := v()
-		if len(actualVal) == 0 {
-			return defaultVal
+	return func(v Confunc) Confunc {
+		actualVal, err := v()
+		if err != nil {
+			actualVal = defaultVal
 		}
-		return actualVal
+		return func() (string, error) { return actualVal, nil }
 	}
 }

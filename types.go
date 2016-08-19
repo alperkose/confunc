@@ -8,8 +8,10 @@ type Boolean func() bool
 
 type Float64 func() float64
 
-type Interceptor func(String) string
+type Confunc func() (string, error)
+
+type Interceptor func(Confunc) Confunc
 
 type Source interface {
-	Value(v string) string
+	Value(v string) (string, error)
 }
