@@ -35,12 +35,12 @@ if connectionCount < maxNumberOfOpenConnections() {
 }
 ```
 
-`Interceptor` is a simple function that accepts a function that returns a string and also returns string.
+`Interceptor` is a simple function that accepts a `Confunc` function and also returns `Confunc` function.
 
 ```go
-type String func() string
+type Confunc func() (string, error)
 
-type Interceptor func(String) string
+type Interceptor func(Confunc) Confunc
 ```
 
 Interceptors process the configuration value before it is accessed, every time. Custom interceptors can be easily introduces by providing a function matching the above signature. Available interceptors are:
