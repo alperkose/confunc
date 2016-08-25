@@ -27,7 +27,7 @@ Source is where the configuration is retrieved. It is defined by the `Source` in
 `confunc` provides a middleware mechanism via `Interceptor` type. It enables handling of various cases like default value
 
 ```go
-maxNumberOfOpenConnections := confunc.From(confunc.Env()).Int("MAX_OPEN_CONNECTIONS", confunc.Default(10))
+maxNumberOfOpenConnections := confunc.From(confunc.Env()).Int("MAX_OPEN_CONNECTIONS", confunc.Default("10"))
 ...
 // when you need to access the value
 if connectionCount < maxNumberOfOpenConnections() {
